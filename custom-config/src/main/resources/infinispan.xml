@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan xmlns="urn:infinispan:config:11.0">
+   <cache-container>
+      <local-cache name="my-cache-2">
+         <custom-configuration xmlns="urn:my:config:11.0">
+            <property name="custom-1">a</property>
+            <property name="custom-2">b</property>
+         </custom-configuration>
+      </local-cache>
+   </cache-container>
+</infinispan>
