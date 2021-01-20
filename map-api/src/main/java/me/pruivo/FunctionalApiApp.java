@@ -11,6 +11,9 @@ import org.infinispan.commons.api.CacheContainerAdmin;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.functional.FunctionalMap;
+import org.infinispan.functional.impl.FunctionalMapImpl;
+import org.infinispan.functional.impl.ReadWriteMapImpl;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.protostream.annotations.ProtoField;
 
@@ -18,15 +21,17 @@ import me.pruivo.data.DataInitializerImpl;
 import me.pruivo.data.Order;
 import me.pruivo.data.User;
 import me.pruivo.function.AddOrderFunction;
+import me.pruivo.function.AddOrderInfinispanFunction;
 import me.pruivo.function.FunctionInitializerImpl;
 import me.pruivo.function.RemoveOrderFunction;
 import me.pruivo.function.UpdateOrderFunction;
+import me.pruivo.function.UpdateOrderInfinispanFunction;
 import me.pruivo.io.ConsoleRunner;
 
 /**
  * Hello world!
  */
-public class App implements Client {
+public class FunctionalApiApp implements Client {
 
    private static final int NUMBER_NODES = 2;
    private static final String CACHE_NAME = "users";
@@ -35,7 +40,7 @@ public class App implements Client {
    private final List<DefaultCacheManager> nodes;
    private int currentNode;
 
-   public App(List<DefaultCacheManager> nodes) {
+   public FunctionalApiApp(List<DefaultCacheManager> nodes) {
       this.nodes = nodes;
       this.currentNode = 0;
    }
@@ -57,7 +62,7 @@ public class App implements Client {
             .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
             .getOrCreateCache(CACHE_NAME, builder.build());
 
-      App app = new App(infinispanNodes);
+      FunctionalApiApp app = new FunctionalApiApp(infinispanNodes);
       ConsoleRunner runner = new ConsoleRunner(app);
       Thread t = new Thread(runner);
       t.start();
@@ -91,7 +96,7 @@ public class App implements Client {
 
    @Override
    public String getClientName() {
-      return "JDK API";
+      return "Infinispan Functional API Client";
    }
 
    public int createUser(String name) {
@@ -114,22 +119,15 @@ public class App implements Client {
    @Override
    public String createOrder(int userId, String description) {
       Order order = new Order(UUID.randomUUID().toString(), description);
-      User user = cache().computeIfPresent(userId, new AddOrderFunction(order));
-      return user == null ? null : order.getOrderId();
+      return readWriteMap().eval(userId, new AddOrderInfinispanFunction(order))
+            .thenApply(added -> added ? order.getOrderId() : null)
+            .join();
    }
 
    @Override
    public Response updateOrder(int userId, String orderId, String status) {
-      User user = cache().computeIfPresent(userId, new UpdateOrderFunction(orderId, status));
-      if (user == null) {
-         return Response.USER_NOT_FOUND;
-      }
-      for (Order order : user.getOrders()) {
-         if (orderId.equals(order.getOrderId())) {
-            return Response.SUCCESS;
-         }
-      }
-      return Response.ORDER_NOT_FOUND;
+      return readWriteMap().eval(userId, new UpdateOrderInfinispanFunction(orderId, status))
+            .join();
    }
 
    @ProtoField
@@ -140,5 +138,13 @@ public class App implements Client {
 
    private Cache<Integer, User> cache() {
       return nodes.get(currentNode).getCache(CACHE_NAME);
+   }
+
+   private FunctionalMapImpl<Integer, User> functionalMap() {
+      return FunctionalMapImpl.create(cache().getAdvancedCache());
+   }
+
+   private FunctionalMap.ReadWriteMap<Integer, User> readWriteMap() {
+      return ReadWriteMapImpl.create(functionalMap());
    }
 }

@@ -5,6 +5,7 @@ import static java.lang.System.console;
 import java.io.Console;
 
 import me.pruivo.App;
+import me.pruivo.Client;
 
 /**
  * @author Pedro Ruivo
@@ -12,10 +13,10 @@ import me.pruivo.App;
  */
 public class ConsoleRunner implements Runnable {
 
-   private final App app;
+   private final Client client;
 
-   public ConsoleRunner(App app) {
-      this.app = app;
+   public ConsoleRunner(Client client) {
+      this.client = client;
    }
 
    private static int selectOption(Console console, int nrOptions) {
@@ -40,14 +41,16 @@ public class ConsoleRunner implements Runnable {
 
       boolean exit = false;
       while (!exit) {
+         console.printf("%n===%n");
+         console.printf("Using Infinispan node %s%n", client.getCurrentNode());
+         console.printf("Using %s%n", client.getClientName());
          console.printf("===%n");
-         console.printf("Using Infinispan node %s%n", app.getCurrentNode());
          for (int i = 0; i < options.length; ++i) {
             console.printf("%d: %s%n", i, options[i].description);
          }
          int option = selectOption(console, options.length);
          if (option >= 0) {
-            exit = options[option].execute(app, console);
+            exit = options[option].execute(client, console);
          }
       }
    }

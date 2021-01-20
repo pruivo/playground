@@ -3,7 +3,7 @@ package me.pruivo.io;
 import java.io.Console;
 import java.util.Collection;
 
-import me.pruivo.App;
+import me.pruivo.Client;
 import me.pruivo.data.Order;
 import me.pruivo.data.User;
 
@@ -15,13 +15,13 @@ public enum ConsoleAction {
 
    EXIT("Exit") {
       @Override
-      boolean execute(App client, Console console) {
+      boolean execute(Client client, Console console) {
          return true;
       }
    },
    SWITCH_NODE("Switch to other Infinispan node") {
       @Override
-      boolean execute(App client, Console console) {
+      boolean execute(Client client, Console console) {
          do {
             String nodeS = console.readLine("Node id [0-%d]=", client.getNumberOfNodes() - 1).trim();
             try {
@@ -35,7 +35,7 @@ public enum ConsoleAction {
    },
    CREATE_USER("Create user") {
       @Override
-      boolean execute(App client, Console console) {
+      boolean execute(Client client, Console console) {
          String name = console.readLine("Name=").trim();
          int id = client.createUser(name);
          console.printf("User created with id %s%n", id);
@@ -44,7 +44,7 @@ public enum ConsoleAction {
    },
    LIST_USERS("List users") {
       @Override
-      boolean execute(App client, Console console) {
+      boolean execute(Client client, Console console) {
          Collection<User> users = client.listUsers();
          for (User user : users) {
             console.printf("- %s (id=%d)%n", user.getName(), user.getId());
@@ -54,7 +54,7 @@ public enum ConsoleAction {
    },
    CREATE_ORDER("Create order") {
       @Override
-      boolean execute(App client, Console console) {
+      boolean execute(Client client, Console console) {
          do {
             String userId = console.readLine("User id=").trim();
             String description = console.readLine("Order description=").trim();
@@ -74,7 +74,7 @@ public enum ConsoleAction {
    },
    LIST_ORDERS("List orders") {
       @Override
-      boolean execute(App client, Console console) {
+      boolean execute(Client client, Console console) {
          do {
             String userId = console.readLine("User id=").trim();
             try {
@@ -96,23 +96,23 @@ public enum ConsoleAction {
    },
    UPDATE_ORDER_1("Update order to IN_PROGRESS") {
       @Override
-      boolean execute(App client, Console console) {
+      boolean execute(Client client, Console console) {
          String userId = console.readLine("User id=").trim();
          String orderId = console.readLine("Order id=").trim();
          do {
             try {
-               User user = client.updateOrder(Integer.parseInt(userId), orderId, "IN_PROGRESS");
-               if (user == null) {
-                  console.printf("User id %s does not exist%n", userId);
-                  return false;
+               Client.Response rsp = client.updateOrder(Integer.parseInt(userId), orderId, "IN_PROGRESS");
+               switch (rsp) {
+                  case SUCCESS:
+                     console.printf("Order updated!.%n");
+                     break;
+                  case USER_NOT_FOUND:
+                     ConsoleAction.userNotFound(console, userId);
+                     break;
+                  case ORDER_NOT_FOUND:
+                     ConsoleAction.orderNotFound(console, orderId);
+                     break;
                }
-               for (Order order : user.getOrders()) {
-                  if (orderId.equals(order.getOrderId())) {
-                     console.printf("Order status %s%n", order.getStatus());
-                     return false;
-                  }
-               }
-               console.printf("Order %s not found%n", orderId);
                return false;
             } catch (NumberFormatException e) {
                System.out.printf("Unable to parse user id %s%n", userId);
@@ -122,23 +122,23 @@ public enum ConsoleAction {
    },
    UPDATE_ORDER_2("Update order to COMPLETE") {
       @Override
-      boolean execute(App client, Console console) {
+      boolean execute(Client client, Console console) {
          String userId = console.readLine("User id=").trim();
          String orderId = console.readLine("Order id=").trim();
          do {
             try {
-               User user = client.updateOrder(Integer.parseInt(userId), orderId, "COMPLETE");
-               if (user == null) {
-                  console.printf("User id %s does not exist%n", userId);
-                  return false;
+               Client.Response rsp = client.updateOrder(Integer.parseInt(userId), orderId, "COMPLETE");
+               switch (rsp) {
+                  case SUCCESS:
+                     console.printf("Order updated!.%n");
+                     break;
+                  case USER_NOT_FOUND:
+                     ConsoleAction.userNotFound(console, userId);
+                     break;
+                  case ORDER_NOT_FOUND:
+                     ConsoleAction.orderNotFound(console, orderId);
+                     break;
                }
-               for (Order order : user.getOrders()) {
-                  if (orderId.equals(order.getOrderId())) {
-                     console.printf("Order status %s%n", order.getStatus());
-                     return false;
-                  }
-               }
-               console.printf("Order %s not found%n", orderId);
                return false;
             } catch (NumberFormatException e) {
                System.out.printf("Unable to parse user id %s%n", userId);
@@ -148,14 +148,22 @@ public enum ConsoleAction {
    },
    REMOVE_ORDER("Remove order") {
       @Override
-      boolean execute(App client, Console console) {
+      boolean execute(Client client, Console console) {
          String userId = console.readLine("User id=").trim();
          String orderId = console.readLine("Order id=").trim();
          do {
             try {
-               User user = client.removeOrder(Integer.parseInt(userId), orderId);
-               if (user == null) {
-                  console.printf("User id %s does not exist%n", userId);
+               Client.Response rsp = client.removeOrder(Integer.parseInt(userId), orderId);
+               switch (rsp) {
+                  case SUCCESS:
+                     console.printf("Order removed.%n");
+                     break;
+                  case USER_NOT_FOUND:
+                     ConsoleAction.userNotFound(console, userId);
+                     break;
+                  case ORDER_NOT_FOUND:
+                     ConsoleAction.orderNotFound(console, orderId);
+                     break;
                }
                return false;
             } catch (NumberFormatException e) {
@@ -171,6 +179,14 @@ public enum ConsoleAction {
       this.description = description;
    }
 
-   abstract boolean execute(App client, Console console);
+   abstract boolean execute(Client client, Console console);
+
+   private static void userNotFound(Console console, String userId) {
+      console.printf("User id %s does not exist%n", userId);
+   }
+
+   private static void orderNotFound(Console console, String orderId) {
+      console.printf("Order id %s does not exist%n", orderId);
+   }
 
 }

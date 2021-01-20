@@ -39,6 +39,22 @@ Using Infinispan node node-0
 8: Remove order
 ```
 
+## Infinispan Functional API (experimental)
+
+Also, it is included another implementation using Infinispan's Functional API.
+To run it, enable the `functionalApi` profile by executing the following command:
+
+``` bash
+mvn package exec:java -PfunctionalApi
+```
+
+The Functional API has some advantage over the JDKs `compute()`:
+
+* Non blocking.
+* It only replicates to the backups if the value is changed (i.e. when `set()` is invoked in the function).
+* It can return anything to caller while the JDK approach returns the full object stored.
+* Update multiple keys by using `evalMany()` or `evalAll()`.
+
 ### Usage example
 
 ```

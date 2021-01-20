@@ -16,7 +16,20 @@
       <maven.compiler.source>1.8</maven.compiler.source>
       <maven.compiler.target>1.8</maven.compiler.target>
       <version.infinispan>11.0.9.Final</version.infinispan>
+      <app.main.class>me.pruivo.App</app.main.class>
    </properties>
+
+   <profiles>
+      <profile>
+         <id>functionalApi</id>
+         <activation>
+            <activeByDefault>false</activeByDefault>
+         </activation>
+         <properties>
+            <app.main.class>me.pruivo.FunctionalApiApp</app.main.class>
+         </properties>
+      </profile>
+   </profiles>
 
    <dependencyManagement>
       <dependencies>
@@ -106,7 +119,7 @@
                </execution>
             </executions>
             <configuration>
-               <mainClass>me.pruivo.App</mainClass>
+               <mainClass>${app.main.class}</mainClass>
             </configuration>
          </plugin>
       </plugins>

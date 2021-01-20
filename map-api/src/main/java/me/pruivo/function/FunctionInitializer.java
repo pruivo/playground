@@ -13,7 +13,10 @@ import me.pruivo.data.DataInitializer;
       includeClasses = {
             AddOrderFunction.class,
             RemoveOrderFunction.class,
-            UpdateOrderFunction.class
+            UpdateOrderFunction.class,
+            AddOrderInfinispanFunction.class,
+            RemoveOrderInfinispanFunction.class,
+            UpdateOrderInfinispanFunction.class
       },
       schemaFileName = "function.proto",
       schemaFilePath = "proto/",
