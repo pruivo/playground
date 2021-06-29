@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Configuration verbose="false" status="error" packages="org.infinispan.util.logging.log4j">
+
+    <Appenders>
+        <Console name="STDOUT">
+            <PatternLayout
+                    pattern="%highlight{%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p (%t) [%c] %m%throwable}{INFO=normal, DEBUG=normal, TRACE=normal}%n"/>
+        </Console>
+        <File name="FILE" fileName="/tmp/sfs-migration.log" append="false" bufferedIO="true">
+            <PatternLayout pattern="%d %-5p (%t) [%c] %m%n" charset="UTF-8"/>
+            <ThresholdFilter level="trace"/>
+            <!--
+             Replace the filter above with the definition below to only allow TRACE and DEBUG messages from threads
+             whose names include the log4j.thread.filter system property. Useful to get TRACE logs
+             only for a test that we know is failing, instead of all the tests (although not all threads
+             follow the convention).
+             -->
+            <!--  Filters>
+               <ThresholdFilter level="TRACE"/>
+               <ThreadNameFilter include="${sys:log4j.thread.filter}" level="INFO" />
+            </Filters -->
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="org.infinispan" level="debug"/>
+        <Logger name="org.infinispan.marshall" level="warn"/>
+        <Logger name="org.infinispan.commons.marshall" level="warn"/>
+        <Logger name="org.infinispan.jmx" level="warn"/>
+        <Logger name="org.infinispan.factories" level="warn"/>
+        <Logger name="com.mchange" level="warn"/>
+        <Logger name="org.jgroups" level="info"/>
+        <Root level="INFO">
+            <AppenderRef ref="STDOUT" level="INFO"/>
+            <AppenderRef ref="FILE"/>
+        </Root>
+    </Loggers>
+
+</Configuration>
