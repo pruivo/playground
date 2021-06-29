@@ -15,13 +15,13 @@ public class Infinispan11Runner implements Runner {
    public void execute(Cache<String, Order> cache) {
       cache.clear();
       for (int i = 0; i < 1500; ++i) {
-         cache.put("order_" + i, new Order("order_" + i, "Order description for order_" + i));
+         cache.put("order_" + i, Order.newOrder(i));
       }
    }
 
    @Override
    public void executeSingle(Cache<String, Order> cache) {
       cache.clear();
-      cache.put("order", new Order("single_order", "Single order description"));
+      cache.put("order_0", Order.newOrder(0));
    }
 }

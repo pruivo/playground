@@ -16,6 +16,10 @@ public final class Util {
    }
 
    public static void assertEquals(Order expected, Order value, Logger logger) {
+      if (value == null) {
+         logger.error("Wrong order. Expected=" + expected + ", value=<null>");
+         return;
+      }
       if (expected.getOrderId().equals(value.getOrderId()) &&
             expected.getDescription().equals(value.getDescription()) &&
             expected.getStatus().equals(value.getStatus())) {

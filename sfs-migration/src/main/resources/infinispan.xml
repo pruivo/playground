@@ -4,9 +4,12 @@
                           urn:org:jgroups http://www.jgroups.org/schema/jgroups-4.2.xsd"
         xmlns="urn:infinispan:config:11.0">
         <jgroups>
+            <stack name="global" extends="tcp">
+                <MPING mcast_port="11111" stack.combine="REPLACE"/>
+            </stack>
             <stack name="xsite" extends="udp">
                 <relay.RELAY2 site="LON" xmlns="urn:org:jgroups"/>
-                <remote-sites default-stack="tcp">
+                <remote-sites default-stack="global">
                     <remote-site name="LON"/>
                     <remote-site name="NYC"/>
                     <remote-site name="SFO"/>
@@ -20,15 +23,19 @@
         <serialization>
             <context-initializer class="me.pruivo.data.DataInitializerImpl"/>
         </serialization>
+        <global-state>
+            <persistent-location path="/tmp/sfs-global-state"/>
+            <overlay-configuration-storage/>
+        </global-state>
         <distributed-cache-configuration name="dist-sync" segments="2">
             <persistence>
-                <file-store segmented="false" path="/tmp/sfs-migration"/>
+                <file-store segmented="false" path="/tmp/sfs-global-state/data"/>
             </persistence>
         </distributed-cache-configuration>
         <distributed-cache-configuration name="dist-sync-opt-tx" segments="2">
             <transaction mode="NON_XA"/>
             <persistence>
-                <file-store segmented="false" path="/tmp/sfs-migration"/>
+                <file-store segmented="false" path="/tmp/sfs-global-state/data"/>
             </persistence>
         </distributed-cache-configuration>
         <distributed-cache-configuration name="dist-sync-irac" segments="2">
@@ -36,7 +43,7 @@
                 <backup site="SFO" strategy="ASYNC"/>
             </backups>
             <persistence>
-                <file-store segmented="false" path="/tmp/sfs-migration"/>
+                <file-store segmented="false" path="/tmp/sfs-global-state/data"/>
             </persistence>
         </distributed-cache-configuration>
         <distributed-cache-configuration name="dist-sync-opt-tx-irac" segments="2">
@@ -45,7 +52,7 @@
             </backups>
             <transaction mode="NON_XA"/>
             <persistence>
-                <file-store segmented="false" path="/tmp/sfs-migration"/>
+                <file-store segmented="false" path="/tmp/sfs-global-state/data"/>
             </persistence>
         </distributed-cache-configuration>
     </cache-container>

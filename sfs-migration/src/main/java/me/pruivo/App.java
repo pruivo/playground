@@ -10,6 +10,7 @@ import org.infinispan.commons.util.Version;
 import org.infinispan.manager.DefaultCacheManager;
 
 import me.pruivo.runner.Infinispan11Runner;
+import me.pruivo.runner.Infinispan125Runner;
 import me.pruivo.runner.Infinispan12CorruptedRunner;
 import me.pruivo.runner.Runner;
 
@@ -28,6 +29,7 @@ public class App {
       RUNNERS = new HashMap<>();
       RUNNERS.put("11.0.11.Final", new Infinispan11Runner());
       RUNNERS.put("12.1.4.Final", new Infinispan12CorruptedRunner());
+      RUNNERS.put("12.1.5-SNAPSHOT", new Infinispan125Runner());
 
       M_CACHE_NAMES = new HashMap<>();
       M_CACHE_NAMES.put("m_dist", "dist-sync");
