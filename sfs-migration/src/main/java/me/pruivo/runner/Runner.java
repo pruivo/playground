@@ -13,8 +13,8 @@ import me.pruivo.data.Order;
  */
 public interface Runner {
 
-   void execute(Cache<String, Order> cache) throws Exception;
+   void execute(Cache<Object, Object> cache) throws Exception;
 
-   void executeSingle(Cache<String, Order> cache) throws Exception;
+   void executeSingle(Cache<Object, Object> cache) throws Exception;
 
 }

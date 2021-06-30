@@ -1,8 +1,10 @@
 package me.pruivo;
 
-import org.apache.logging.log4j.Logger;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
-import me.pruivo.data.Order;
+import org.apache.logging.log4j.Logger;
+import org.infinispan.commons.marshall.WrappedByteArray;
 
 /**
  * TODO! document this
@@ -15,17 +17,36 @@ public final class Util {
    private Util() {
    }
 
-   public static void assertEquals(Order expected, Order value, Logger logger) {
-      if (value == null) {
-         logger.error("Wrong order. Expected=" + expected + ", value=<null>");
+
+   public static void assertEquals(Object expected, Object value, Logger logger) {
+      if (Objects.equals(expected, value)) {
          return;
       }
-      if (expected.getOrderId().equals(value.getOrderId()) &&
-            expected.getDescription().equals(value.getDescription()) &&
-            expected.getStatus().equals(value.getStatus())) {
-         return;
-      }
-      logger.error("Wrong order. Expected=" + expected + ", value=" + value);
+      logger.error("Wrong value. Expected=" + expected + ", value=" + value);
+   }
+
+   public static String key(int id) {
+      return "key_" + id;
+   }
+
+   public static WrappedByteArray wrappedKey(int id) {
+      return new WrappedByteArray(("key_" + id).getBytes(StandardCharsets.UTF_8));
+   }
+
+   public static String value(int id) {
+      return "value_" + id;
+   }
+
+   public static String value(String suffix, int id) {
+      return "value_" + id + suffix;
+   }
+
+   public static WrappedByteArray wrappedValue(int id) {
+      return new WrappedByteArray(("value_" + id).getBytes(StandardCharsets.UTF_8));
+   }
+
+   public static WrappedByteArray wrappedValue(String prefix, int id) {
+      return new WrappedByteArray(("value_" + id + prefix).getBytes(StandardCharsets.UTF_8));
    }
 
 }

@@ -1,11 +1,13 @@
 package me.pruivo.runner;
 
+import java.util.function.IntConsumer;
+import java.util.stream.IntStream;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.infinispan.Cache;
 
 import me.pruivo.Util;
-import me.pruivo.data.Order;
 
 /**
  * TODO! document this
@@ -18,34 +20,36 @@ public class Infinispan125Runner implements Runner {
    private static final Logger log = LogManager.getLogger(Infinispan125Runner.class);
 
    @Override
-   public void execute(Cache<String, Order> cache) {
+   public void execute(Cache<Object, Object> cache) {
       //make sure it is able to read
-      for (int i = 0; i < 500; ++i) {
-         Order value = cache.get("order_" + i);
-         Util.assertEquals(Order.newOrder(i), value, log);
-      }
-      for (int i = 500; i < 1000; ++i) {
-         Order value = cache.get("order_" + i);
-         Util.assertEquals(Order.newOrder(i).update("12-corrupted"), value, log);
-      }
-      for (int i = 1500; i < 21000; ++i) {
-         Order value = cache.get("order_" + i);
-         Util.assertEquals(Order.newOrder(i), value, log);
-      }
-      for (int i = 0; i < 500; ++i) {
-         String key = "order_" + i;
-         Order value = cache.get(key);
-         cache.put(key, value.update("12.1.5"));
-      }
-      for (int i = 0; i < 500; ++i) {
-         Order value = cache.get("order_" + i);
-         Util.assertEquals(Order.newOrder(i).update("12.1.5"), value, log);
-      }
+      IntConsumer get = i -> Util.assertEquals(Util.value(i), cache.get(Util.key(i)), log);
+      IntConsumer corruptedGet = i -> Util.assertEquals(Util.value("_corrupted", i), cache.get(Util.key(i)), log);
+      IntConsumer removed = i -> Util.assertEquals(null, cache.get(Util.key(i)), log);
+
+      IntStream.of(0, 100, 200).forEach(value -> {
+         // first 30, corrupted suffixed value
+         IntStream.range(value, value + 30).forEach(corruptedGet);
+         // 30-40 removed
+         IntStream.range(value + 30, value + 40).forEach(removed);
+         // 50-100 untouched
+         IntStream.range(value + 50, value + 100).forEach(get);
+      });
+
+      IntConsumer wGet = i -> Util.assertEquals(Util.wrappedValue(i), cache.get(Util.key(i)), log);
+      IntConsumer wCorruptedGet = i -> Util.assertEquals(Util.wrappedValue("_corrupted", i), cache.get(Util.key(i)), log);
+
+      IntStream.of(300, 400, 500).forEach(value -> {
+         // first 30, corrupted suffixed value
+         IntStream.range(value, value + 30).forEach(wCorruptedGet);
+         // 30-40 removed
+         IntStream.range(value + 30, value + 40).forEach(removed);
+         // 50-100 untouched
+         IntStream.range(value + 50, value + 100).forEach(wGet);
+      });
    }
 
    @Override
-   public void executeSingle(Cache<String, Order> cache) {
-      Order value = cache.get("order_0");
-      Util.assertEquals(Order.newOrder(0), value, log);
+   public void executeSingle(Cache<Object, Object> cache) {
+      Util.assertEquals(Util.value(-1), cache.get(Util.key(-1)), log);
    }
 }

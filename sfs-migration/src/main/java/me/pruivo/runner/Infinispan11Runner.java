@@ -1,8 +1,11 @@
 package me.pruivo.runner;
 
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
+
 import org.infinispan.Cache;
 
-import me.pruivo.data.Order;
+import me.pruivo.Util;
 
 /**
  * TODO! document this
@@ -12,16 +15,20 @@ import me.pruivo.data.Order;
  */
 public class Infinispan11Runner implements Runner {
    @Override
-   public void execute(Cache<String, Order> cache) {
+   public void execute(Cache<Object, Object> cache) {
       cache.clear();
-      for (int i = 0; i < 1500; ++i) {
-         cache.put("order_" + i, Order.newOrder(i));
-      }
+      IntStream.range(0, 100).forEach(i -> cache.put(Util.key(i), Util.value(i)));
+      IntStream.range(100, 200).forEach(i -> cache.put(Util.key(i), Util.value(i), Long.MAX_VALUE, TimeUnit.DAYS));
+      IntStream.range(200, 300).forEach(i -> cache.put(Util.key(i), Util.value(i), -1, TimeUnit.DAYS, Long.MAX_VALUE, TimeUnit.DAYS));
+
+      IntStream.range(300, 400).forEach(i -> cache.put(Util.wrappedKey(i), Util.wrappedValue(i)));
+      IntStream.range(400, 500).forEach(i -> cache.put(Util.wrappedKey(i), Util.wrappedValue(i), Long.MAX_VALUE, TimeUnit.DAYS));
+      IntStream.range(500, 600).forEach(i -> cache.put(Util.wrappedKey(i), Util.wrappedValue(i), -1, TimeUnit.DAYS, Long.MAX_VALUE, TimeUnit.DAYS));
    }
 
    @Override
-   public void executeSingle(Cache<String, Order> cache) {
+   public void executeSingle(Cache<Object, Object> cache) {
       cache.clear();
-      cache.put("order_0", Order.newOrder(0));
+      cache.put(Util.key(-1), Util.value(-1));
    }
 }
