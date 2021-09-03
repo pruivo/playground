@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration name="InfinispanClientConfig" monitorInterval="60" shutdownHook="disable">
+    <Appenders>
+        <!-- Colored output on the console -->
+        <Console name="STDOUT">
+            <PatternLayout
+                    pattern="%highlight{%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p (%t) [%c] %m%throwable}{INFO=normal, DEBUG=normal, TRACE=normal}%n"/>
+        </Console>
+
+        <!-- Rolling file -->
+        <RollingFile name="FILE" createOnDemand="true"
+                     fileName="/tmp/client.log"
+                     filePattern="/tmp/client.log.%d{yyyy-MM-dd}-%i">
+            <Policies>
+                <OnStartupTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="100 MB"/>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p (%t) [%c] %m%throwable%n"/>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="STDOUT" level="INFO"/>
+            <AppenderRef ref="FILE"/>
+        </Root>
+
+        <!-- You can set different levels for categories here -->
+        <!-- You can also assign different appenders for each category, but you don't have to -->
+        <Logger name="com.arjuna" level="WARN"/>
+        <!-- No need to warn about not being able to TLS/SSL handshake -->
+        <Logger name="io.netty.handler.ssl.ApplicationProtocolNegotiationHandler" level="ERROR"/>
+    </Loggers>
+</Configuration>
