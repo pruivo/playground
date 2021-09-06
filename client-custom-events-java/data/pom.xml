@@ -38,12 +38,6 @@
             <version>2.14.1</version>
         </dependency>
 
-        <!-- generate protostream schemas -->
-        <dependency>
-            <groupId>org.infinispan.protostream</groupId>
-            <artifactId>protostream-processor</artifactId>
-        </dependency>
-
         <!-- generate meta-inf -->
         <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>
