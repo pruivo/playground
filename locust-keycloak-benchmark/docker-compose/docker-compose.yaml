@@ -1,0 +1,20 @@
+services:
+  master:
+    image: locustio/locust
+    ports:
+      - "8089:8089" # webui port
+      - "5557:5557" # master port
+    volumes:
+      - ./locustfile.py:/mnt/locust/locustfile.py:ro
+      - ./results/:/mnt/results/:rw
+    command: >
+      --locustfile /mnt/locust/locustfile.py
+      --master
+      --expect-workers ${WORKERS:-1}
+      --run-time ${DURATION:-30s}
+      --users ${CONCURRENT_USERS:-10}
+      --spawn-rate ${SPAWN_RATE:-2}
+      --autostart
+      --autoquit 5
+      --csv /mnt/results/${RESULT_FILE_NAME:-results}
+      --html /mnt/results/${RESULT_FILE_NAME:-results}.html

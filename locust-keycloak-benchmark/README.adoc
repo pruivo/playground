@@ -1,0 +1,49 @@
+= Benchmark Keycloak with Locust
+
+== Requirements
+
+* Java 21
+* Maven
+* Docker
+* Docker Compose
+
+== Locust Server
+
+In the `docker-compose` directory, you can start the locust in a container.
+Check the `docker-compose.yaml` for environment variables to configure the number of users, test duration and the number of workers/clients.
+
+In the current configuration, the locust server waits for the expected number of workers, starts the tests and saves the results.
+It then stops and shutdown.
+
+1. Open a terminal
+2. Change to directory `docker-compose`
++
+[source,bash]
+----
+cd docker-compose
+----
+3. Run the following command to start the locust master.
++
+[source,bash]
+----
+docker-compose up
+----
+
+== Compile and run the clients
+
+1. In the `KeycloakBenchmark`, set the Keycloak server URL.
+2. Open a terminal
+3. Compile the code with:
++
+[source,bash]
+----
+mvn clean compile assembly:single
+----
+
+4. Run the following command to start the clients.
+Start as many as the number of expected workers.
++
+[source,bash]
+----
+java -jar target/locust-keycloak-benchmark-1.0-SNAPSHOT-jar-with-dependencies.jar
+----
