@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   This is just a very simplistic example configuration file.  For more information, please see
+   https://infinispan.org/docs/stable/ for more configuration details.
+-->
+
+<infinispan
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:infinispan:config:15.0 http://infinispan.org/schemas/infinispan-config-15.0.xsd"
+        xmlns="urn:infinispan:config:15.0">
+
+    <cache-container statistics="true">
+
+        <transport stack="tcp" cluster="ghi"/>
+
+        <!-- Default configuration is appropriate for entity/collection caching. -->
+        <!-- hibernate default configuration -->
+        <invalidation-cache name="entity" remote-timeout="20000" statistics="false">
+            <encoding media-type="application/x-java-object"/>
+            <locking concurrency-level="1000" acquire-timeout="15000"/>
+            <transaction mode="NONE"/>
+            <expiration max-idle="100000" interval="5000"/>
+            <memory max-count="10000"/>
+        </invalidation-cache>
+
+    </cache-container>
+</infinispan>
