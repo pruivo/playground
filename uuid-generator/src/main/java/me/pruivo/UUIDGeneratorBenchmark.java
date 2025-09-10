@@ -58,6 +58,7 @@ public class UUIDGeneratorBenchmark {
     // UUID takes 16 bytes and 36 chars
     private static final ThreadLocal<ThreadLocalData> THREAD_LOCAL = ThreadLocal.withInitial(() -> new ThreadLocalData(new SecureRandom(), new byte[16], new StringBuilder(36)));
     private static final VarHandle LONG = MethodHandles.byteArrayViewVarHandle(long[].class, ByteOrder.LITTLE_ENDIAN);
+    private static final SecureRandom CACHED = new SecureRandom();
 
     @Benchmark
     public String stringOriginal() {
@@ -129,23 +130,27 @@ public class UUIDGeneratorBenchmark {
     }
 
     @Benchmark
-    public String stringAlternative2() {
-        var data = THREAD_LOCAL.get();
-        var bytes = data.uuidBytes;
-        data.random.nextBytes(bytes);
-
-        long msb = (long) LONG.get(bytes, 0);
-        long lsb = (long) LONG.get(bytes, 1);
-        return new UUID(msb, lsb).toString();
+    public String stringVarHandle() {
+        return uuidVarHandle().toString();
     }
 
     @Benchmark
-    public UUID uuidOriginal() {
-        return UUID.fromString(stringOriginal());
+    public String stringJdk8() {
+        return uuidJdk8().toString();
     }
 
     @Benchmark
-    public UUID uuidAlternative() {
+    public UUID uuidFromString() {
+        return UUID.fromString(generateSecureID());
+    }
+
+    @Benchmark
+    public UUID uuidNextLong() {
+        return new UUID(THREAD_LOCAL.get().random.nextLong(), THREAD_LOCAL.get().random.nextLong());
+    }
+
+    @Benchmark
+    public UUID uuidVarHandle() {
         var data = THREAD_LOCAL.get();
         var bytes = data.uuidBytes;
         data.random.nextBytes(bytes);
@@ -153,6 +158,34 @@ public class UUIDGeneratorBenchmark {
         long msb = (long) LONG.get(bytes, 0);
         long lsb = (long) LONG.get(bytes, 1);
         return new UUID(msb, lsb);
+    }
+
+    @Benchmark
+    public UUID uuidVarHandleNoThreadLocal() {
+        byte[] bytes = new byte[16];
+        CACHED.nextBytes(bytes);
+
+        long msb = (long) LONG.get(bytes, 0);
+        long lsb = (long) LONG.get(bytes, 1);
+        return new UUID(msb, lsb);
+    }
+
+    @Benchmark
+    public UUID uuidJdk8() {
+        byte[] data = new byte[16];
+        CACHED.nextBytes(data);
+        return new UUID(toLong(data, 0), toLong(data, 8));
+    }
+
+    private static long toLong(byte[] data, int offset) {
+        return  ((data[offset] & 0xFFL) << 56) |
+                ((data[offset + 1] & 0xFFL) << 48) |
+                ((data[offset + 2] & 0xFFL) << 40) |
+                ((data[offset + 3] & 0xFFL) << 32) |
+                ((data[offset + 4] & 0xFFL) << 24) |
+                ((data[offset + 5] & 0xFFL) << 16) |
+                ((data[offset + 6] & 0xFFL) <<  8) |
+                ((data[offset + 7] & 0xFFL)) ;
     }
 
     // cache UUID secure random temporary objects
